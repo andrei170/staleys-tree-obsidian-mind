@@ -15,11 +15,13 @@
     background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
   a{color:inherit}
   code{font-family:'SF Mono',Consolas,monospace}
+  button{font:inherit;background:none;border:none;color:inherit;cursor:pointer}
 
   .titlebar{background:#161616;border-bottom:1px solid var(--line);padding:9px 16px;display:flex;
     align-items:center;gap:10px;font-size:13px;color:var(--mut)}
   .titlebar .dot{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
   .titlebar .vaultname{color:var(--ink);font-weight:600;margin-left:8px}
+  .titlebar .hint{margin-left:auto;font-size:12px;color:#5c6068;display:flex;align-items:center;gap:6px}
 
   .app{display:grid;grid-template-columns:230px 1fr 260px;height:calc(100vh - 38px)}
   @media(max-width:1000px){.app{grid-template-columns:56px 1fr}}
@@ -33,13 +35,15 @@
   .searchbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
     font-size:12.5px;color:var(--mut);margin-bottom:14px;display:flex;align-items:center;gap:6px}
   .tree{font-size:13.5px}
-  .tfolder{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px;cursor:pointer;color:var(--ink)}
+  .tfolder{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px;cursor:pointer;color:var(--ink);width:100%;text-align:left}
   .tfolder:hover{background:var(--panel)}
-  .tfolder iconify-icon{font-size:15px;color:var(--mut)}
-  .tchild{padding-left:22px}
+  .tfolder iconify-icon.caret{font-size:15px;color:var(--mut);transition:transform .15s}
+  .tfolder.closed iconify-icon.caret{transform:rotate(-90deg)}
+  .tchild{padding-left:22px;overflow:hidden}
+  .tchild.closed{display:none}
   @media(max-width:1000px){.tchild,.tfolder span{display:none}.tfolder{justify-content:center}}
   .tfile{display:flex;align-items:center;gap:6px;padding:4px 6px 4px 22px;border-radius:5px;cursor:pointer;
-    color:var(--mut);font-size:13px}
+    color:var(--mut);font-size:13px;width:100%;text-align:left}
   .tfile:hover{background:var(--panel);color:var(--ink)}
   .tfile.active{background:#33304a;color:var(--accent2)}
   @media(max-width:1000px){.tfile{display:none}}
@@ -47,11 +51,14 @@
 
   /* center editor */
   .center{display:flex;flex-direction:column;overflow:hidden}
-  .tabs{display:flex;background:#181818;border-bottom:1px solid var(--line)}
-  .tab{padding:9px 16px;font-size:12.5px;color:var(--mut);border-right:1px solid var(--line);
-    display:flex;align-items:center;gap:8px}
+  .tabs{display:flex;background:#181818;border-bottom:1px solid var(--line);overflow-x:auto}
+  .tab{padding:9px 10px 9px 16px;font-size:12.5px;color:var(--mut);border-right:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;flex-shrink:0}
   .tab.active{background:var(--bg);color:var(--ink)}
-  .tab iconify-icon{font-size:13px}
+  .tab iconify-icon.fi{font-size:13px}
+  .tab .close{opacity:0;font-size:14px;border-radius:4px;padding:1px}
+  .tab:hover .close{opacity:.7}
+  .tab .close:hover{opacity:1;background:#3a3a3a}
 
   .editor{flex:1;overflow-y:auto;padding:34px 44px;max-width:760px}
   @media(max-width:700px){.editor{padding:22px 18px}}
@@ -60,9 +67,11 @@
   .fm .frow{display:flex;gap:8px}
   .fm .k{color:var(--tag)}
   .note h1{font-size:26px;font-weight:800;margin-bottom:6px}
-  .note .meta{color:var(--mut);font-size:12.5px;margin-bottom:22px}
+  .note .metaline{color:var(--mut);font-size:12.5px;margin-bottom:22px}
   .note h2{font-size:16px;font-weight:700;margin:26px 0 10px;color:var(--ink)}
   .note p{color:#c6c8cc;font-size:14.5px;margin-bottom:12px}
+  .note ul.plain{margin:0 0 14px 18px;color:#c6c8cc;font-size:14.5px}
+  .note ul.plain li{margin-bottom:5px}
   .wl{color:var(--tag);border-bottom:1px dotted rgba(156,140,255,.5);cursor:pointer}
   .checklist{list-style:none}
   .checklist li{display:flex;align-items:flex-start;gap:9px;font-size:14.5px;color:#c6c8cc;padding:5px 0}
@@ -82,7 +91,8 @@
   .rhead{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);font-weight:700;
     margin-bottom:12px;margin-top:22px}
   .rhead:first-child{margin-top:0}
-  .backlink{font-size:12.5px;color:var(--tag);padding:5px 0;border-bottom:1px solid var(--line)}
+  .backlink{font-size:12.5px;color:var(--tag);padding:5px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .backlink:hover{color:var(--accent2)}
   .graphwrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;height:150px}
 
   /* explainer */
@@ -106,124 +116,31 @@
 <div class="titlebar">
   <div class="dot"></div><div class="dot"></div><div class="dot"></div>
   <span class="vaultname">Staleys Tree Solutions.vault</span>
+  <span class="hint"><iconify-icon icon="ph:cursor-click"></iconify-icon> click any file, folder or link to explore</span>
 </div>
 
 <div class="app">
-  <div class="leftpane">
-    <div class="vaulthead"><iconify-icon icon="ph:vault-fill"></iconify-icon><span>Staleys Tree Solutions</span></div>
-    <div class="searchbox"><iconify-icon icon="ph:magnifying-glass"></iconify-icon>Search vault...</div>
-    <div class="tree">
-      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Knowledge</span></div>
-      <div class="tchild">
-        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>services-and-pricing.md</div>
-        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>service-area.md</div>
-        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>brand-voice.md</div>
-      </div>
-      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Leads</span></div>
-      <div class="tchild">
-        <div class="tfile active"><iconify-icon icon="ph:file-text"></iconify-icon>falkirk-stump-grinding.md</div>
-        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>bridge-of-allan-crown-reduction.md</div>
-        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>dunblane-hedge-enquiry.md</div>
-      </div>
-      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Agents</span></div>
-      <div class="tchild">
-        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>lead-intake-agent.md</div>
-        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>quote-follow-up-agent.md</div>
-        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>review-request-agent.md</div>
-        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>escalation-rules.md</div>
-      </div>
-      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Reviews</span></div>
-      <div class="tchild">
-        <div class="tfile"><iconify-icon icon="ph:star"></iconify-icon>google-reviews-log.md</div>
-      </div>
-      <div class="tfolder"><iconify-icon icon="ph:caret-right-bold"></iconify-icon><span>MEMORY.md</span></div>
-    </div>
-  </div>
+  <div class="leftpane" id="leftpane"></div>
 
   <div class="center">
-    <div class="tabs">
-      <div class="tab active"><iconify-icon icon="ph:file-text"></iconify-icon>falkirk-stump-grinding.md</div>
-    </div>
-    <div class="editor">
-      <div class="fm">
-        <div class="frow"><span class="k">tags:</span>&nbsp;#lead #stump-grinding #falkirk</div>
-        <div class="frow"><span class="k">status:</span>&nbsp;quote-sent</div>
-        <div class="frow"><span class="k">received:</span>&nbsp;today, 14:02, via web enquiry form</div>
-      </div>
-      <div class="note">
-        <h1>Falkirk - Stump Grinding Enquiry</h1>
-        <div class="meta">Leads / falkirk-stump-grinding.md</div>
-
-        <h2>Enquiry</h2>
-        <p>2 stumps, back garden, Falkirk postcode. Submitted through the site's web enquiry form.</p>
-
-        <h2>Action Log</h2>
-        <ul class="checklist">
-          <li><div class="cb done"></div>Enquiry received and logged</li>
-          <li><div class="cb done"></div>Matched against <span class="wl">Knowledge/service-area</span>, Falkirk confirmed in range</li>
-          <li><div class="cb done"></div>Quote drafted from current rates in <span class="wl">Knowledge/services-and-pricing</span>, sent 14:06</li>
-          <li><div class="cb done"></div>Follow-up scheduled per <span class="wl">Agents/quote-follow-up-agent</span></li>
-          <li><div class="cb"></div>Awaiting reply</li>
-        </ul>
-
-        <div class="tags">
-          <span class="tagpill">#stump-grinding</span>
-          <span class="tagpill">#falkirk</span>
-          <span class="tagpill">#quote-sent</span>
-        </div>
-
-        <div class="callout">
-          <div class="clab">Reasoning, logged in plain language</div>
-          No prior job history for this contact, standard quote-follow-up sequence applied. If no reply by the 48-hour mark, escalate to Gillon directly per <span class="wl">Agents/escalation-rules</span> rather than send a second automated message, repeat automated follow-ups risk reading as spam on a job this size.
-        </div>
-
-        <h2>Next Scheduled Action</h2>
-        <p>48-hour follow-up check, tomorrow 14:06. If no reply, escalates to Gillon via WhatsApp rather than repeating the automated message.</p>
-      </div>
-    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="editor" id="editor"></div>
   </div>
 
-  <div class="rightpane">
-    <div class="rhead">Backlinks (3)</div>
-    <div class="backlink">Knowledge/service-area.md</div>
-    <div class="backlink">Knowledge/services-and-pricing.md</div>
-    <div class="backlink">Agents/quote-follow-up-agent.md</div>
-
-    <div class="rhead">Tags</div>
-    <div class="backlink">#stump-grinding (4)</div>
-    <div class="backlink">#falkirk (2)</div>
-    <div class="backlink">#quote-sent (7)</div>
-
-    <div class="rhead">Graph View</div>
-    <svg class="graphwrap" viewBox="0 0 220 140">
-      <line x1="60" y1="70" x2="110" y2="30" stroke="#3a3a3a"/>
-      <line x1="60" y1="70" x2="110" y2="100" stroke="#3a3a3a"/>
-      <line x1="60" y1="70" x2="30" y2="110" stroke="#3a3a3a"/>
-      <line x1="110" y1="30" x2="170" y2="20" stroke="#3a3a3a"/>
-      <line x1="110" y1="100" x2="180" y2="110" stroke="#3a3a3a"/>
-      <line x1="110" y1="100" x2="150" y2="70" stroke="#3a3a3a"/>
-      <circle cx="60" cy="70" r="7" fill="#7c6cf0"/>
-      <circle cx="110" cy="30" r="5" fill="#a48fff"/>
-      <circle cx="110" cy="100" r="5" fill="#a48fff"/>
-      <circle cx="30" cy="110" r="4" fill="#5c5570"/>
-      <circle cx="170" cy="20" r="4" fill="#5c5570"/>
-      <circle cx="180" cy="110" r="4" fill="#5c5570"/>
-      <circle cx="150" cy="70" r="4" fill="#5c5570"/>
-    </svg>
-  </div>
+  <div class="rightpane" id="rightpane"></div>
 </div>
 
 <div class="explain">
   <div class="exwrap">
     <div class="eyebrow">What This Actually Is</div>
     <h2>Not a platform you have to trust. A vault you can read.</h2>
-    <p class="lead">This isn't a SaaS dashboard or a black-box bot. It's a plain folder of markdown files, the note you just looked at is exactly what the system would write for a real Staleys Tree Solutions enquiry, in the same format, every time. You can open, read, and edit every single one yourself.</p>
+    <p class="lead">This isn't a SaaS dashboard or a black-box bot. It's a plain folder of markdown files. Every note above is exactly what the system would write for a real Staleys Tree Solutions enquiry, in the same format, every time. Click around, it's the actual structure, not a screenshot.</p>
 
     <div class="exgrid">
       <div class="excard">
         <iconify-icon icon="ph:eye-fill"></iconify-icon>
         <h3>Fully auditable</h3>
-        <p>Every action it takes gets logged as a readable note, like the one on screen, reasoning included. Nothing runs that you can't see.</p>
+        <p>Every action it takes gets logged as a readable note, reasoning included. Nothing runs that you can't see.</p>
       </div>
       <div class="excard">
         <iconify-icon icon="ph:hand-fist-fill"></iconify-icon>
@@ -238,13 +155,285 @@
       <div class="excard">
         <iconify-icon icon="ph:bell-ringing-fill"></iconify-icon>
         <h3>Escalates, doesn't guess</h3>
-        <p>When something falls outside what it's confident handling, like an unanswered quote, it flags you directly instead of freelancing.</p>
+        <p>When something falls outside what it's confident handling, it flags you directly instead of freelancing.</p>
       </div>
     </div>
 
     <p class="exfooter">This is a concept snapshot built around Staleys Tree Solutions' real service area and enquiry flow to show the shape of it, not a live system yet. The next step is building it out around how you'd actually want quoting, follow-up, and review requests to run.</p>
   </div>
 </div>
+
+<script>
+const notes = {
+  'services-pricing': {
+    title: 'services-and-pricing.md', path: 'Knowledge / services-and-pricing.md', icon: 'ph:file-text',
+    fm: [['tags','#knowledge #pricing'],['type','reference']],
+    body: `<h1>Services &amp; Pricing</h1><div class="metaline">Knowledge / services-and-pricing.md</div>
+      <h2>Services Offered</h2>
+      <ul class="plain">
+        <li>Tree felling and removal</li>
+        <li>Hedge cutting and shaping</li>
+        <li>Stump grinding and removal</li>
+        <li>Crown reduction and thinning</li>
+        <li>Controlled dissection / dismantling</li>
+        <li>Garden clearance</li>
+        <li>Emergency tree work</li>
+        <li>Woodland management</li>
+        <li>Mobile elevated working platform access</li>
+      </ul>
+      <h2>Pricing</h2>
+      <p>No fixed price list published, every job is quoted individually via free quotation. This note is what the agent reads before drafting any quote, so figures stay consistent with what Gillon would actually charge.</p>
+      <div class="callout"><div class="clab">Referenced by</div>3 open leads currently pull pricing logic from this note.</div>`,
+    tags: ['#knowledge','#pricing'], backlinks: ['falkirk','bridge-of-allan','dunblane']
+  },
+  'service-area': {
+    title: 'service-area.md', path: 'Knowledge / service-area.md', icon: 'ph:file-text',
+    fm: [['tags','#knowledge #coverage'],['type','reference']],
+    body: `<h1>Service Area</h1><div class="metaline">Knowledge / service-area.md</div>
+      <h2>Covered Towns</h2>
+      <ul class="plain">
+        <li>Stirling (base)</li><li>Falkirk</li><li>Glasgow</li><li>Edinburgh</li><li>Leith</li>
+        <li>Bearsden</li><li>West End</li><li>Milngavie</li><li>Bridge of Allan</li><li>Dunblane</li>
+      </ul>
+      <p>Every incoming enquiry gets checked against this list before a quote is drafted. Anything outside range gets flagged to Gillon rather than auto-quoted.</p>`,
+    tags: ['#knowledge','#coverage'], backlinks: ['falkirk','bridge-of-allan','dunblane']
+  },
+  'brand-voice': {
+    title: 'brand-voice.md', path: 'Knowledge / brand-voice.md', icon: 'ph:file-text',
+    fm: [['tags','#knowledge #voice'],['type','reference']],
+    body: `<h1>Brand &amp; Reputation</h1><div class="metaline">Knowledge / brand-voice.md</div>
+      <p>Fully licensed and insured. Real Google reviews consistently highlight problem-solving on jobs other tree surgeons turned down, professional conduct, competitive pricing, and tidiness on site.</p>
+      <div class="callout"><div class="clab">Used for</div>Review-request follow-ups and any customer-facing copy pull tone from this note, so nothing sounds generic.</div>`,
+    tags: ['#knowledge','#voice'], backlinks: ['google-reviews']
+  },
+  'falkirk': {
+    title: 'falkirk-stump-grinding.md', path: 'Leads / falkirk-stump-grinding.md', icon: 'ph:file-text',
+    fm: [['tags','#lead #stump-grinding #falkirk'],['status','quote-sent'],['received','today, 14:02, via web enquiry form']],
+    body: `<h1>Falkirk - Stump Grinding Enquiry</h1><div class="metaline">Leads / falkirk-stump-grinding.md</div>
+      <h2>Enquiry</h2><p>2 stumps, back garden, Falkirk postcode. Submitted through the site's web enquiry form.</p>
+      <h2>Action Log</h2>
+      <ul class="checklist">
+        <li><div class="cb done"></div>Enquiry received and logged</li>
+        <li><div class="cb done"></div>Matched against <span class="wl" data-go="service-area">Knowledge/service-area</span>, Falkirk confirmed in range</li>
+        <li><div class="cb done"></div>Quote drafted from <span class="wl" data-go="services-pricing">Knowledge/services-and-pricing</span>, sent 14:06</li>
+        <li><div class="cb done"></div>Follow-up scheduled per <span class="wl" data-go="quote-follow-up-agent">Agents/quote-follow-up-agent</span></li>
+        <li><div class="cb"></div>Awaiting reply</li>
+      </ul>
+      <div class="tags"><span class="tagpill">#stump-grinding</span><span class="tagpill">#falkirk</span><span class="tagpill">#quote-sent</span></div>
+      <div class="callout"><div class="clab">Reasoning, logged in plain language</div>No prior job history for this contact, standard quote-follow-up sequence applied. If no reply by the 48-hour mark, escalate to Gillon directly per <span class="wl" data-go="escalation-rules">Agents/escalation-rules</span> rather than send a second automated message, repeat automated follow-ups risk reading as spam on a job this size.</div>
+      <h2>Next Scheduled Action</h2><p>48-hour follow-up check, tomorrow 14:06. If no reply, escalates to Gillon via WhatsApp rather than repeating the automated message.</p>`,
+    tags: ['#stump-grinding','#falkirk','#quote-sent'], backlinks: ['service-area','services-pricing','quote-follow-up-agent']
+  },
+  'bridge-of-allan': {
+    title: 'bridge-of-allan-crown-reduction.md', path: 'Leads / bridge-of-allan-crown-reduction.md', icon: 'ph:file-text',
+    fm: [['tags','#lead #crown-reduction #bridge-of-allan'],['status','job-won'],['received','5 days ago, phone call']],
+    body: `<h1>Bridge of Allan - Crown Reduction</h1><div class="metaline">Leads / bridge-of-allan-crown-reduction.md</div>
+      <h2>Enquiry</h2><p>Single mature tree, crown reduction requested, phoned in directly.</p>
+      <h2>Action Log</h2>
+      <ul class="checklist">
+        <li><div class="cb done"></div>Call logged manually by Gillon, agent created the note automatically</li>
+        <li><div class="cb done"></div>Quote sent same day</li>
+        <li><div class="cb done"></div>Job accepted, scheduled</li>
+        <li><div class="cb done"></div>Job completed</li>
+        <li><div class="cb done"></div>Review request sent per <span class="wl" data-go="review-request-agent">Agents/review-request-agent</span></li>
+      </ul>
+      <div class="tags"><span class="tagpill">#crown-reduction</span><span class="tagpill">#bridge-of-allan</span><span class="tagpill">#job-won</span></div>
+      <div class="callout"><div class="clab">Reasoning, logged in plain language</div>Full lifecycle example, this is what a lead looks like once it's closed out. Review request fired 24 hours after job completion, timed to when satisfaction is highest, not immediately on-site.</div>`,
+    tags: ['#crown-reduction','#bridge-of-allan','#job-won'], backlinks: ['review-request-agent']
+  },
+  'dunblane': {
+    title: 'dunblane-hedge-enquiry.md', path: 'Leads / dunblane-hedge-enquiry.md', icon: 'ph:file-text',
+    fm: [['tags','#lead #hedge-cutting #dunblane'],['status','escalated']],
+    body: `<h1>Dunblane - Hedge Enquiry</h1><div class="metaline">Leads / dunblane-hedge-enquiry.md</div>
+      <h2>Enquiry</h2><p>Large boundary hedge, unclear access, submitted via web form.</p>
+      <h2>Action Log</h2>
+      <ul class="checklist">
+        <li><div class="cb done"></div>Enquiry received and logged</li>
+        <li><div class="cb done"></div>Matched against <span class="wl" data-go="service-area">Knowledge/service-area</span>, Dunblane confirmed in range</li>
+        <li><div class="cb done"></div>Access details unclear from enquiry, confidence too low to auto-quote</li>
+        <li><div class="cb done"></div>Escalated to Gillon per <span class="wl" data-go="escalation-rules">Agents/escalation-rules</span></li>
+      </ul>
+      <div class="tags"><span class="tagpill">#hedge-cutting</span><span class="tagpill">#dunblane</span><span class="tagpill">#escalated</span></div>
+      <div class="callout"><div class="clab">Reasoning, logged in plain language</div>This is the other side of the system, when it isn't confident enough to act, it says so and hands off, it doesn't guess or send a quote that might be wrong.</div>`,
+    tags: ['#hedge-cutting','#dunblane','#escalated'], backlinks: ['service-area','escalation-rules']
+  },
+  'lead-intake-agent': {
+    title: 'lead-intake-agent.md', path: 'Agents / lead-intake-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #intake'],['type','agent-spec']],
+    body: `<h1>Lead Intake Agent</h1><div class="metaline">Agents / lead-intake-agent.md</div>
+      <p>Watches the web enquiry form, WhatsApp, and email for new contact. On a new enquiry, creates a note in <span class="wl" data-go="falkirk">Leads/</span>, tags it, and checks it against <span class="wl" data-go="service-area">Knowledge/service-area</span> before anything else happens.</p>
+      <h2>Rules</h2>
+      <ul class="plain">
+        <li>Never auto-quotes without matching a service area entry first</li>
+        <li>Low-confidence details (unclear access, unusual scope) route straight to <span class="wl" data-go="escalation-rules">escalation</span>, not a guess</li>
+        <li>Every note it creates uses the same format, so nothing looks different lead to lead</li>
+      </ul>`,
+    tags: ['#agent','#intake'], backlinks: ['falkirk','bridge-of-allan','dunblane']
+  },
+  'quote-follow-up-agent': {
+    title: 'quote-follow-up-agent.md', path: 'Agents / quote-follow-up-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #follow-up'],['type','agent-spec']],
+    body: `<h1>Quote Follow-Up Agent</h1><div class="metaline">Agents / quote-follow-up-agent.md</div>
+      <p>Runs a single 48-hour follow-up on any sent quote with no reply. One follow-up only, never repeats, since repeat automated messages read as spam on a job this size.</p>
+      <h2>Rules</h2>
+      <ul class="plain">
+        <li>48 hours, no reply, one follow-up message sent</li>
+        <li>Still no reply after that, escalates to Gillon per <span class="wl" data-go="escalation-rules">escalation-rules</span> rather than sending a second automated message</li>
+        <li>Reply received at any point, hands the thread straight to Gillon</li>
+      </ul>`,
+    tags: ['#agent','#follow-up'], backlinks: ['falkirk']
+  },
+  'review-request-agent': {
+    title: 'review-request-agent.md', path: 'Agents / review-request-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #reviews'],['type','agent-spec']],
+    body: `<h1>Review Request Agent</h1><div class="metaline">Agents / review-request-agent.md</div>
+      <p>Fires 24 hours after a job is marked complete, timed to when satisfaction is highest rather than immediately on-site. Logs every request in <span class="wl" data-go="google-reviews">Reviews/google-reviews-log</span>.</p>`,
+    tags: ['#agent','#reviews'], backlinks: ['bridge-of-allan','google-reviews']
+  },
+  'escalation-rules': {
+    title: 'escalation-rules.md', path: 'Agents / escalation-rules.md', icon: 'ph:robot',
+    fm: [['tags','#agent #escalation'],['type','agent-spec']],
+    body: `<h1>Escalation Rules</h1><div class="metaline">Agents / escalation-rules.md</div>
+      <p>The core rule the whole vault runs on: when confidence is low, hand off, don't guess.</p>
+      <h2>Escalates to Gillon when</h2>
+      <ul class="plain">
+        <li>A quote gets no reply after one follow-up</li>
+        <li>Job details are unclear enough that a quote could be wrong</li>
+        <li>An enquiry falls outside the confirmed service area</li>
+        <li>Anything doesn't match a pattern the system has handled before</li>
+      </ul>
+      <div class="callout"><div class="clab">Why this matters</div>This is the rule that keeps the system from acting on your behalf when it shouldn't. It's not trying to look autonomous, it's trying to be right, and knowing when to stop is part of that.</div>`,
+    tags: ['#agent','#escalation'], backlinks: ['falkirk','dunblane','quote-follow-up-agent']
+  },
+  'google-reviews': {
+    title: 'google-reviews-log.md', path: 'Reviews / google-reviews-log.md', icon: 'ph:star',
+    fm: [['tags','#reviews #reputation'],['type','log']],
+    body: `<h1>Google Reviews Log</h1><div class="metaline">Reviews / google-reviews-log.md</div>
+      <p>Real reviews on the live Google profile consistently highlight three things: solving problems other tree surgeons turned down, tidy and professional work on site, and competitive pricing. One recurring theme in the real reviews: jobs where other tree surgeons said it couldn't be done.</p>
+      <div class="callout"><div class="clab">Used for</div><span class="wl" data-go="brand-voice">Knowledge/brand-voice</span> pulls directly from this log to keep tone consistent in any customer-facing copy.</div>`,
+    tags: ['#reviews','#reputation'], backlinks: ['brand-voice','review-request-agent']
+  },
+  'memory': {
+    title: 'MEMORY.md', path: 'MEMORY.md', icon: 'ph:brain',
+    fm: [['tags','#memory'],['type','standing-rules']],
+    body: `<h1>MEMORY</h1><div class="metaline">MEMORY.md</div>
+      <p>Standing rules the whole vault follows, the kind of thing you'd otherwise have to remind a new hire about constantly.</p>
+      <ul class="plain">
+        <li>Never repeat an automated follow-up, one attempt only, then escalate</li>
+        <li>Never auto-quote outside the confirmed service area</li>
+        <li>Every note follows the same format, so nothing looks inconsistent lead to lead</li>
+      </ul>
+      <p>This file is exactly how this vault demo itself is built, standing rules in a plain file, readable and editable any time.</p>`,
+    tags: ['#memory'], backlinks: ['escalation-rules']
+  }
+};
+
+const treeHTML = `
+  <div class="vaulthead"><iconify-icon icon="ph:vault-fill"></iconify-icon><span>Staleys Tree Solutions</span></div>
+  <div class="searchbox"><iconify-icon icon="ph:magnifying-glass"></iconify-icon>Search vault...</div>
+  <div class="tree">
+    <button class="tfolder" data-folder="f1"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Knowledge</span></button>
+    <div class="tchild" id="f1">
+      <button class="tfile" data-id="services-pricing"><iconify-icon icon="ph:file-text"></iconify-icon>services-and-pricing.md</button>
+      <button class="tfile" data-id="service-area"><iconify-icon icon="ph:file-text"></iconify-icon>service-area.md</button>
+      <button class="tfile" data-id="brand-voice"><iconify-icon icon="ph:file-text"></iconify-icon>brand-voice.md</button>
+    </div>
+    <button class="tfolder" data-folder="f2"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Leads</span></button>
+    <div class="tchild" id="f2">
+      <button class="tfile" data-id="falkirk"><iconify-icon icon="ph:file-text"></iconify-icon>falkirk-stump-grinding.md</button>
+      <button class="tfile" data-id="bridge-of-allan"><iconify-icon icon="ph:file-text"></iconify-icon>bridge-of-allan-crown-reduction.md</button>
+      <button class="tfile" data-id="dunblane"><iconify-icon icon="ph:file-text"></iconify-icon>dunblane-hedge-enquiry.md</button>
+    </div>
+    <button class="tfolder" data-folder="f3"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Agents</span></button>
+    <div class="tchild" id="f3">
+      <button class="tfile" data-id="lead-intake-agent"><iconify-icon icon="ph:robot"></iconify-icon>lead-intake-agent.md</button>
+      <button class="tfile" data-id="quote-follow-up-agent"><iconify-icon icon="ph:robot"></iconify-icon>quote-follow-up-agent.md</button>
+      <button class="tfile" data-id="review-request-agent"><iconify-icon icon="ph:robot"></iconify-icon>review-request-agent.md</button>
+      <button class="tfile" data-id="escalation-rules"><iconify-icon icon="ph:robot"></iconify-icon>escalation-rules.md</button>
+    </div>
+    <button class="tfolder" data-folder="f4"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Reviews</span></button>
+    <div class="tchild" id="f4">
+      <button class="tfile" data-id="google-reviews"><iconify-icon icon="ph:star"></iconify-icon>google-reviews-log.md</button>
+    </div>
+    <button class="tfile" data-id="memory" style="padding-left:6px"><iconify-icon icon="ph:brain"></iconify-icon>MEMORY.md</button>
+  </div>
+`;
+document.getElementById('leftpane').innerHTML = treeHTML;
+
+let openTabs = ['falkirk'];
+let activeId = 'falkirk';
+
+function render(){
+  // sidebar active state
+  document.querySelectorAll('.tfile').forEach(el => el.classList.toggle('active', el.dataset.id === activeId));
+
+  // tabs
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = openTabs.map(id => {
+    const n = notes[id];
+    return `<div class="tab ${id===activeId?'active':''}" data-id="${id}">
+      <iconify-icon class="fi" icon="${n.icon}"></iconify-icon>${n.title}
+      <span class="close" data-close="${id}"><iconify-icon icon="ph:x"></iconify-icon></span>
+    </div>`;
+  }).join('');
+
+  // editor
+  const n = notes[activeId];
+  const fmHTML = n.fm.map(([k,v]) => `<div class="frow"><span class="k">${k}:</span>&nbsp;${v}</div>`).join('');
+  document.getElementById('editor').innerHTML = `<div class="fm">${fmHTML}</div><div class="note">${n.body}</div>`;
+
+  // right pane
+  const rp = document.getElementById('rightpane');
+  const backlinkHTML = n.backlinks.map(id => `<div class="backlink" data-id="${id}">${notes[id].title}</div>`).join('') || '<div class="backlink" style="cursor:default">No backlinks yet</div>';
+  const tagHTML = n.tags.map(t => `<div class="backlink" style="cursor:default">${t}</div>`).join('');
+  rp.innerHTML = `
+    <div class="rhead">Backlinks (${n.backlinks.length})</div>${backlinkHTML}
+    <div class="rhead">Tags</div>${tagHTML}
+    <div class="rhead">Graph View</div>
+    <svg class="graphwrap" viewBox="0 0 220 140">
+      <line x1="60" y1="70" x2="110" y2="30" stroke="#3a3a3a"/><line x1="60" y1="70" x2="110" y2="100" stroke="#3a3a3a"/>
+      <line x1="60" y1="70" x2="30" y2="110" stroke="#3a3a3a"/><line x1="110" y1="30" x2="170" y2="20" stroke="#3a3a3a"/>
+      <line x1="110" y1="100" x2="180" y2="110" stroke="#3a3a3a"/><line x1="110" y1="100" x2="150" y2="70" stroke="#3a3a3a"/>
+      <circle cx="60" cy="70" r="7" fill="#7c6cf0"/><circle cx="110" cy="30" r="5" fill="#a48fff"/>
+      <circle cx="110" cy="100" r="5" fill="#a48fff"/><circle cx="30" cy="110" r="4" fill="#5c5570"/>
+      <circle cx="170" cy="20" r="4" fill="#5c5570"/><circle cx="180" cy="110" r="4" fill="#5c5570"/>
+      <circle cx="150" cy="70" r="4" fill="#5c5570"/>
+    </svg>`;
+
+  wireInteractions();
+}
+
+function openFile(id){
+  if(!openTabs.includes(id)) openTabs.push(id);
+  activeId = id;
+  render();
+}
+
+function wireInteractions(){
+  document.querySelectorAll('.tfile[data-id]').forEach(el => el.onclick = () => openFile(el.dataset.id));
+  document.querySelectorAll('.tfolder').forEach(el => el.onclick = () => {
+    const child = document.getElementById(el.dataset.folder);
+    child.classList.toggle('closed');
+    el.classList.toggle('closed');
+  });
+  document.querySelectorAll('.tab').forEach(el => el.onclick = (e) => {
+    if(e.target.closest('.close')) return;
+    activeId = el.dataset.id; render();
+  });
+  document.querySelectorAll('.close').forEach(el => el.onclick = (e) => {
+    e.stopPropagation();
+    const id = el.dataset.close;
+    openTabs = openTabs.filter(t => t !== id);
+    if(openTabs.length === 0) openTabs = ['falkirk'];
+    if(activeId === id) activeId = openTabs[openTabs.length-1];
+    render();
+  });
+  document.querySelectorAll('.wl[data-go]').forEach(el => el.onclick = () => openFile(el.dataset.go));
+  document.querySelectorAll('.backlink[data-id]').forEach(el => el.onclick = () => openFile(el.dataset.id));
+}
+
+render();
+</script>
 
 </body>
 </html>
