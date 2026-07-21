@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obsidian Mind - Staleys Tree Solutions Vault</title>
+<script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+<style>
+  :root{
+    --bg:#1e1e1e; --sidebar:#181818; --panel:#262626; --line:#333333; --ink:#dcddde; --mut:#8b8f96;
+    --accent:#7c6cf0; --accent2:#a48fff; --tag:#9c8cff; --good:#3fb950; --warn:#e2a336;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  code{font-family:'SF Mono',Consolas,monospace}
+
+  .titlebar{background:#161616;border-bottom:1px solid var(--line);padding:9px 16px;display:flex;
+    align-items:center;gap:10px;font-size:13px;color:var(--mut)}
+  .titlebar .dot{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
+  .titlebar .vaultname{color:var(--ink);font-weight:600;margin-left:8px}
+
+  .app{display:grid;grid-template-columns:230px 1fr 260px;height:calc(100vh - 38px)}
+  @media(max-width:1000px){.app{grid-template-columns:56px 1fr}}
+  @media(max-width:1000px){.rightpane{display:none}}
+
+  /* left sidebar */
+  .leftpane{background:var(--sidebar);border-right:1px solid var(--line);overflow-y:auto;padding:14px 10px}
+  .vaulthead{display:flex;align-items:center;gap:8px;padding:6px 6px 14px;font-weight:700;font-size:14px}
+  .vaulthead iconify-icon{color:var(--accent);font-size:20px}
+  @media(max-width:1000px){.vaulthead span,.searchbox,.treelabel{display:none}}
+  .searchbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
+    font-size:12.5px;color:var(--mut);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+  .tree{font-size:13.5px}
+  .tfolder{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px;cursor:pointer;color:var(--ink)}
+  .tfolder:hover{background:var(--panel)}
+  .tfolder iconify-icon{font-size:15px;color:var(--mut)}
+  .tchild{padding-left:22px}
+  @media(max-width:1000px){.tchild,.tfolder span{display:none}.tfolder{justify-content:center}}
+  .tfile{display:flex;align-items:center;gap:6px;padding:4px 6px 4px 22px;border-radius:5px;cursor:pointer;
+    color:var(--mut);font-size:13px}
+  .tfile:hover{background:var(--panel);color:var(--ink)}
+  .tfile.active{background:#33304a;color:var(--accent2)}
+  @media(max-width:1000px){.tfile{display:none}}
+  .tfile iconify-icon{font-size:13px}
+
+  /* center editor */
+  .center{display:flex;flex-direction:column;overflow:hidden}
+  .tabs{display:flex;background:#181818;border-bottom:1px solid var(--line)}
+  .tab{padding:9px 16px;font-size:12.5px;color:var(--mut);border-right:1px solid var(--line);
+    display:flex;align-items:center;gap:8px}
+  .tab.active{background:var(--bg);color:var(--ink)}
+  .tab iconify-icon{font-size:13px}
+
+  .editor{flex:1;overflow-y:auto;padding:34px 44px;max-width:760px}
+  @media(max-width:700px){.editor{padding:22px 18px}}
+  .fm{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;
+    font-size:12.5px;color:var(--mut);margin-bottom:22px}
+  .fm .frow{display:flex;gap:8px}
+  .fm .k{color:var(--tag)}
+  .note h1{font-size:26px;font-weight:800;margin-bottom:6px}
+  .note .meta{color:var(--mut);font-size:12.5px;margin-bottom:22px}
+  .note h2{font-size:16px;font-weight:700;margin:26px 0 10px;color:var(--ink)}
+  .note p{color:#c6c8cc;font-size:14.5px;margin-bottom:12px}
+  .wl{color:var(--tag);border-bottom:1px dotted rgba(156,140,255,.5);cursor:pointer}
+  .checklist{list-style:none}
+  .checklist li{display:flex;align-items:flex-start;gap:9px;font-size:14.5px;color:#c6c8cc;padding:5px 0}
+  .cb{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--mut);flex-shrink:0;margin-top:2px}
+  .cb.done{background:var(--accent);border-color:var(--accent);position:relative}
+  .cb.done:after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;
+    border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+  .tagpill{background:#2c2740;color:var(--tag);font-size:12px;padding:3px 10px;border-radius:999px}
+  .callout{background:#242034;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:12px 16px;
+    margin:18px 0;font-size:13.5px;color:#c6c8cc}
+  .callout .clab{color:var(--accent2);font-weight:700;font-size:12px;text-transform:uppercase;
+    letter-spacing:.08em;margin-bottom:6px}
+
+  /* right pane */
+  .rightpane{background:var(--sidebar);border-left:1px solid var(--line);padding:18px 16px;overflow-y:auto}
+  .rhead{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);font-weight:700;
+    margin-bottom:12px;margin-top:22px}
+  .rhead:first-child{margin-top:0}
+  .backlink{font-size:12.5px;color:var(--tag);padding:5px 0;border-bottom:1px solid var(--line)}
+  .graphwrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;height:150px}
+
+  /* explainer */
+  .explain{background:#141414;border-top:1px solid var(--line);padding:64px 24px}
+  .exwrap{max-width:820px;margin:0 auto}
+  .exwrap .eyebrow{color:var(--accent2);letter-spacing:.16em;text-transform:uppercase;font-size:12px;
+    font-weight:700;margin-bottom:14px}
+  .exwrap h2{font-size:28px;font-weight:800;margin-bottom:18px;color:#fff}
+  .exwrap p.lead{color:#b6b9c0;font-size:16px;margin-bottom:30px;max-width:640px}
+  .exgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:700px){.exgrid{grid-template-columns:1fr}}
+  .excard{background:#1c1c1c;border:1px solid var(--line);border-radius:12px;padding:22px}
+  .excard iconify-icon{font-size:24px;color:var(--accent2);margin-bottom:10px;display:block}
+  .excard h3{font-size:15.5px;margin-bottom:8px;color:#fff}
+  .excard p{color:#a8abb2;font-size:13.5px}
+  .exfooter{margin-top:34px;padding-top:26px;border-top:1px solid var(--line);color:#9498a0;font-size:13.5px}
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <span class="vaultname">Staleys Tree Solutions.vault</span>
+</div>
+
+<div class="app">
+  <div class="leftpane">
+    <div class="vaulthead"><iconify-icon icon="ph:vault-fill"></iconify-icon><span>Staleys Tree Solutions</span></div>
+    <div class="searchbox"><iconify-icon icon="ph:magnifying-glass"></iconify-icon>Search vault...</div>
+    <div class="tree">
+      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Knowledge</span></div>
+      <div class="tchild">
+        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>services-and-pricing.md</div>
+        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>service-area.md</div>
+        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>brand-voice.md</div>
+      </div>
+      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Leads</span></div>
+      <div class="tchild">
+        <div class="tfile active"><iconify-icon icon="ph:file-text"></iconify-icon>falkirk-stump-grinding.md</div>
+        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>bridge-of-allan-crown-reduction.md</div>
+        <div class="tfile"><iconify-icon icon="ph:file-text"></iconify-icon>dunblane-hedge-enquiry.md</div>
+      </div>
+      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Agents</span></div>
+      <div class="tchild">
+        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>lead-intake-agent.md</div>
+        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>quote-follow-up-agent.md</div>
+        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>review-request-agent.md</div>
+        <div class="tfile"><iconify-icon icon="ph:robot"></iconify-icon>escalation-rules.md</div>
+      </div>
+      <div class="tfolder"><iconify-icon icon="ph:caret-down-bold"></iconify-icon><span>Reviews</span></div>
+      <div class="tchild">
+        <div class="tfile"><iconify-icon icon="ph:star"></iconify-icon>google-reviews-log.md</div>
+      </div>
+      <div class="tfolder"><iconify-icon icon="ph:caret-right-bold"></iconify-icon><span>MEMORY.md</span></div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="tabs">
+      <div class="tab active"><iconify-icon icon="ph:file-text"></iconify-icon>falkirk-stump-grinding.md</div>
+    </div>
+    <div class="editor">
+      <div class="fm">
+        <div class="frow"><span class="k">tags:</span>&nbsp;#lead #stump-grinding #falkirk</div>
+        <div class="frow"><span class="k">status:</span>&nbsp;quote-sent</div>
+        <div class="frow"><span class="k">received:</span>&nbsp;today, 14:02, via web enquiry form</div>
+      </div>
+      <div class="note">
+        <h1>Falkirk - Stump Grinding Enquiry</h1>
+        <div class="meta">Leads / falkirk-stump-grinding.md</div>
+
+        <h2>Enquiry</h2>
+        <p>2 stumps, back garden, Falkirk postcode. Submitted through the site's web enquiry form.</p>
+
+        <h2>Action Log</h2>
+        <ul class="checklist">
+          <li><div class="cb done"></div>Enquiry received and logged</li>
+          <li><div class="cb done"></div>Matched against <span class="wl">Knowledge/service-area</span>, Falkirk confirmed in range</li>
+          <li><div class="cb done"></div>Quote drafted from current rates in <span class="wl">Knowledge/services-and-pricing</span>, sent 14:06</li>
+          <li><div class="cb done"></div>Follow-up scheduled per <span class="wl">Agents/quote-follow-up-agent</span></li>
+          <li><div class="cb"></div>Awaiting reply</li>
+        </ul>
+
+        <div class="tags">
+          <span class="tagpill">#stump-grinding</span>
+          <span class="tagpill">#falkirk</span>
+          <span class="tagpill">#quote-sent</span>
+        </div>
+
+        <div class="callout">
+          <div class="clab">Reasoning, logged in plain language</div>
+          No prior job history for this contact, standard quote-follow-up sequence applied. If no reply by the 48-hour mark, escalate to Gillon directly per <span class="wl">Agents/escalation-rules</span> rather than send a second automated message, repeat automated follow-ups risk reading as spam on a job this size.
+        </div>
+
+        <h2>Next Scheduled Action</h2>
+        <p>48-hour follow-up check, tomorrow 14:06. If no reply, escalates to Gillon via WhatsApp rather than repeating the automated message.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rightpane">
+    <div class="rhead">Backlinks (3)</div>
+    <div class="backlink">Knowledge/service-area.md</div>
+    <div class="backlink">Knowledge/services-and-pricing.md</div>
+    <div class="backlink">Agents/quote-follow-up-agent.md</div>
+
+    <div class="rhead">Tags</div>
+    <div class="backlink">#stump-grinding (4)</div>
+    <div class="backlink">#falkirk (2)</div>
+    <div class="backlink">#quote-sent (7)</div>
+
+    <div class="rhead">Graph View</div>
+    <svg class="graphwrap" viewBox="0 0 220 140">
+      <line x1="60" y1="70" x2="110" y2="30" stroke="#3a3a3a"/>
+      <line x1="60" y1="70" x2="110" y2="100" stroke="#3a3a3a"/>
+      <line x1="60" y1="70" x2="30" y2="110" stroke="#3a3a3a"/>
+      <line x1="110" y1="30" x2="170" y2="20" stroke="#3a3a3a"/>
+      <line x1="110" y1="100" x2="180" y2="110" stroke="#3a3a3a"/>
+      <line x1="110" y1="100" x2="150" y2="70" stroke="#3a3a3a"/>
+      <circle cx="60" cy="70" r="7" fill="#7c6cf0"/>
+      <circle cx="110" cy="30" r="5" fill="#a48fff"/>
+      <circle cx="110" cy="100" r="5" fill="#a48fff"/>
+      <circle cx="30" cy="110" r="4" fill="#5c5570"/>
+      <circle cx="170" cy="20" r="4" fill="#5c5570"/>
+      <circle cx="180" cy="110" r="4" fill="#5c5570"/>
+      <circle cx="150" cy="70" r="4" fill="#5c5570"/>
+    </svg>
+  </div>
+</div>
+
+<div class="explain">
+  <div class="exwrap">
+    <div class="eyebrow">What This Actually Is</div>
+    <h2>Not a platform you have to trust. A vault you can read.</h2>
+    <p class="lead">This isn't a SaaS dashboard or a black-box bot. It's a plain folder of markdown files, the note you just looked at is exactly what the system would write for a real Staleys Tree Solutions enquiry, in the same format, every time. You can open, read, and edit every single one yourself.</p>
+
+    <div class="exgrid">
+      <div class="excard">
+        <iconify-icon icon="ph:eye-fill"></iconify-icon>
+        <h3>Fully auditable</h3>
+        <p>Every action it takes gets logged as a readable note, like the one on screen, reasoning included. Nothing runs that you can't see.</p>
+      </div>
+      <div class="excard">
+        <iconify-icon icon="ph:hand-fist-fill"></iconify-icon>
+        <h3>Built from your standards</h3>
+        <p>The quoting logic, follow-up timing, and escalation rules all come from how you'd actually handle it, not a generic template.</p>
+      </div>
+      <div class="excard">
+        <iconify-icon icon="ph:key-fill"></iconify-icon>
+        <h3>You own it outright</h3>
+        <p>It's your files, not a rented platform. If you ever wanted to run this entirely yourself with nobody else involved, you could.</p>
+      </div>
+      <div class="excard">
+        <iconify-icon icon="ph:bell-ringing-fill"></iconify-icon>
+        <h3>Escalates, doesn't guess</h3>
+        <p>When something falls outside what it's confident handling, like an unanswered quote, it flags you directly instead of freelancing.</p>
+      </div>
+    </div>
+
+    <p class="exfooter">This is a concept snapshot built around Staleys Tree Solutions' real service area and enquiry flow to show the shape of it, not a live system yet. The next step is building it out around how you'd actually want quoting, follow-up, and review requests to run.</p>
+  </div>
+</div>
+
+</body>
+</html>
