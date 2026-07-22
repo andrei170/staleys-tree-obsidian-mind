@@ -206,6 +206,14 @@ const notes = {
       <div class="callout"><div class="clab">Used for</div>Review-request follow-ups and any customer-facing copy pull tone from this note, so nothing sounds generic.</div>`,
     tags: ['#knowledge','#voice'], backlinks: ['google-reviews']
   },
+  'rigging-notes': {
+    title: 'rigging-notes.md', path: 'Knowledge / rigging-notes.md', icon: 'ph:file-text',
+    fm: [['tags','#knowledge #technical'],['type','reference']],
+    body: `<h1>Rigging Notes</h1><div class="metaline">Knowledge / rigging-notes.md</div>
+      <p>Reference notes for tricky rigging situations, the kind of thing you already ask AI about for a quick sanity check on-site. Kept here so any agent reasoning about job scope or timing has the same technical context you do.</p>
+      <div class="callout"><div class="clab">Growth tier</div>Used by <span class="wl" data-go="quote-drafting-assist">Agents/quote-drafting-assist</span> when a job's complexity affects the price.</div>`,
+    tags: ['#knowledge','#technical'], backlinks: ['quote-drafting-assist']
+  },
   'falkirk': {
     title: 'falkirk-stump-grinding.md', path: 'Leads / falkirk-stump-grinding.md', icon: 'ph:file-text',
     fm: [['tags','#lead #stump-grinding #falkirk'],['status','quote-sent'],['received','today, 14:02, via web enquiry form']],
@@ -305,6 +313,55 @@ const notes = {
       <div class="callout"><div class="clab">Why this matters</div>This is the rule that keeps the system from acting on your behalf when it shouldn't. It's not trying to look autonomous, it's trying to be right, and knowing when to stop is part of that.</div>`,
     tags: ['#agent','#escalation'], backlinks: ['falkirk','dunblane','quote-follow-up-agent']
   },
+  'admin-digest-agent': {
+    title: 'admin-digest-agent.md', path: 'Agents / admin-digest-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #digest'],['type','agent-spec']],
+    body: `<h1>Admin Digest Agent</h1><div class="metaline">Agents / admin-digest-agent.md</div>
+      <p>Built directly around the 3-days-in-the-trees problem. While you're unreachable, everything still gets logged, quotes sent, follow-ups scheduled, escalations flagged. The moment you're back, this agent hands you one plain-language summary instead of you digging through a phone full of missed calls and texts.</p>
+      <h2>What it covers</h2>
+      <ul class="plain">
+        <li>New enquiries received and how each was handled</li>
+        <li>Anything escalated and still waiting on you</li>
+        <li>Jobs completed and review requests sent</li>
+      </ul>`,
+    tags: ['#agent','#digest'], backlinks: []
+  },
+  'arbostar-integration-agent': {
+    title: 'arbostar-integration-agent.md', path: 'Agents / arbostar-integration-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #integration'],['type','agent-spec']],
+    body: `<h1>ArboStar Integration Agent</h1><div class="metaline">Agents / arbostar-integration-agent.md</div>
+      <p>Connects straight into the quoting software you already use, so pricing logic doesn't live in two disconnected places. Instead of replacing ArboStar, this agent feeds it and reads from it, so your existing setup and this vault stay in sync.</p>
+      <div class="callout"><div class="clab">Growth tier</div>Works alongside <span class="wl" data-go="quote-drafting-assist">Agents/quote-drafting-assist</span> to keep pricing consistent everywhere.</div>`,
+    tags: ['#agent','#integration'], backlinks: ['quote-drafting-assist']
+  },
+  'quote-drafting-assist': {
+    title: 'quote-drafting-assist.md', path: 'Agents / quote-drafting-assist.md', icon: 'ph:robot',
+    fm: [['tags','#agent #quoting'],['type','agent-spec']],
+    body: `<h1>Quote Drafting Assist</h1><div class="metaline">Agents / quote-drafting-assist.md</div>
+      <p>Formalizes something you already do by hand, sanity-checking a price before it goes out. This agent cross-references <span class="wl" data-go="services-pricing">Knowledge/services-and-pricing</span>, <span class="wl" data-go="rigging-notes">Knowledge/rigging-notes</span>, and your <span class="wl" data-go="arbostar-integration-agent">ArboStar integration</span> to draft a number you'd actually stand behind, not a guess.</p>`,
+    tags: ['#agent','#quoting'], backlinks: ['services-pricing','rigging-notes','arbostar-integration-agent']
+  },
+  'whatsapp-triage-agent': {
+    title: 'whatsapp-triage-agent.md', path: 'Agents / whatsapp-triage-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #whatsapp'],['type','agent-spec']],
+    body: `<h1>WhatsApp / SMS Triage Agent</h1><div class="metaline">Agents / whatsapp-triage-agent.md</div>
+      <p>The exact gap that cost you 3 solid days last week. Messages get read, categorized, and either handled automatically (routine enquiries, follow-ups) or queued for your <span class="wl" data-go="admin-digest-agent">Agents/admin-digest-agent</span> summary, so your phone stops needing to be answered mid-job.</p>`,
+    tags: ['#agent','#whatsapp'], backlinks: ['admin-digest-agent']
+  },
+  'sales-pipeline-agent': {
+    title: 'sales-pipeline-agent.md', path: 'Agents / sales-pipeline-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #pipeline'],['type','agent-spec']],
+    body: `<h1>Sales Pipeline Agent</h1><div class="metaline">Agents / sales-pipeline-agent.md</div>
+      <p>Migrates and upgrades the company-tracking and follow-up-date system you've already been building yourself. Nothing gets lost in the switch, your existing data carries over, this just makes the follow-up sending and tracking fully automatic instead of manual.</p>`,
+    tags: ['#agent','#pipeline'], backlinks: []
+  },
+  'ops-agent': {
+    title: 'ops-agent.md', path: 'Agents / ops-agent.md', icon: 'ph:robot',
+    fm: [['tags','#agent #ops'],['type','agent-spec']],
+    body: `<h1>Ops Agent</h1><div class="metaline">Agents / ops-agent.md</div>
+      <p>Handles day-to-day job scheduling and admin logic beyond just leads, sequencing jobs, tracking what's booked where, and flagging scheduling conflicts before they become a problem on-site.</p>`,
+    tags: ['#agent','#ops'], backlinks: []
+  },
   'google-reviews': {
     title: 'google-reviews-log.md', path: 'Reviews / google-reviews-log.md', icon: 'ph:star',
     fm: [['tags','#reviews #reputation'],['type','log']],
@@ -337,6 +394,7 @@ const treeHTML = `
       <button class="tfile" data-id="services-pricing"><iconify-icon icon="ph:file-text"></iconify-icon>services-and-pricing.md</button>
       <button class="tfile" data-id="service-area"><iconify-icon icon="ph:file-text"></iconify-icon>service-area.md</button>
       <button class="tfile" data-id="brand-voice"><iconify-icon icon="ph:file-text"></iconify-icon>brand-voice.md</button>
+      <button class="tfile" data-id="rigging-notes"><iconify-icon icon="ph:file-text"></iconify-icon>rigging-notes.md</button>
     </div>
     <button class="tfolder" data-folder="f2"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Leads</span></button>
     <div class="tchild" id="f2">
@@ -350,6 +408,12 @@ const treeHTML = `
       <button class="tfile" data-id="quote-follow-up-agent"><iconify-icon icon="ph:robot"></iconify-icon>quote-follow-up-agent.md</button>
       <button class="tfile" data-id="review-request-agent"><iconify-icon icon="ph:robot"></iconify-icon>review-request-agent.md</button>
       <button class="tfile" data-id="escalation-rules"><iconify-icon icon="ph:robot"></iconify-icon>escalation-rules.md</button>
+      <button class="tfile" data-id="admin-digest-agent"><iconify-icon icon="ph:robot"></iconify-icon>admin-digest-agent.md</button>
+      <button class="tfile" data-id="arbostar-integration-agent"><iconify-icon icon="ph:robot"></iconify-icon>arbostar-integration-agent.md</button>
+      <button class="tfile" data-id="quote-drafting-assist"><iconify-icon icon="ph:robot"></iconify-icon>quote-drafting-assist.md</button>
+      <button class="tfile" data-id="whatsapp-triage-agent"><iconify-icon icon="ph:robot"></iconify-icon>whatsapp-triage-agent.md</button>
+      <button class="tfile" data-id="sales-pipeline-agent"><iconify-icon icon="ph:robot"></iconify-icon>sales-pipeline-agent.md</button>
+      <button class="tfile" data-id="ops-agent"><iconify-icon icon="ph:robot"></iconify-icon>ops-agent.md</button>
     </div>
     <button class="tfolder" data-folder="f4"><iconify-icon class="caret" icon="ph:caret-down-bold"></iconify-icon><span>Reviews</span></button>
     <div class="tchild" id="f4">
